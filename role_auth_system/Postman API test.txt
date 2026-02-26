@@ -1,0 +1,231 @@
+Step 1: Register a New User
+
+Purpose: Create a new user (Manager or Customer).
+
+Method: POST
+
+URL: /api/register/ → http://127.0.0.1:8000/api/register/
+
+Body → raw → JSON:
+
+{
+  "username": "manager1",
+  "email": "manager1@example.com",
+  "password": "StrongPass@123",
+  "password2": "StrongPass@123",
+  "role": "manager"
+}
+
+Send → Response should be:
+
+{"message": "User registered. Verify your email first."}
+
+Check Django console (since SMTP may be disabled) → You’ll see a verification link like:
+
+http://127.0.0.1:8000/api/verify-email/<uid>/<token>/
+
+
+
+
+Step 2: Verify Email
+
+Method: GET
+
+URL: Copy the link from console → /api/verify-email/<uid>/<token>/
+
+Send → Response:
+
+{"success": "Email verified successfully. Wait for admin approval."}
+
+Now the user is active but needs admin approval.
+
+
+
+
+Step 3: Admin Login
+
+Purpose: Get JWT token for admin to manage users.
+
+Make sure you have an admin superuser:
+
+python manage.py createsuperuser
+
+Method: POST
+
+URL: /api/auth/jwt/create/ → http://127.0.0.1:8000/api/auth/jwt/create/
+
+Body → raw → JSON:
+
+{
+  "username": "admin",
+  "password": "adminpassword"
+}
+
+Send → Response:
+
+{
+  "refresh": "<refresh_token>",
+  "access": "<access_token>"
+}
+
+Copy the access token → you’ll use it in Authorization → Bearer Token for all admin requests.
+
+
+
+
+
+Step 4: View Pending Users
+
+Method: GET
+
+URL: /api/admin/pending-users/
+
+Authorization: Bearer Token → Paste admin access_token
+
+Send → Response will list pending users:
+
+[
+  {
+    "id": 2,
+    "username": "manager1",
+    "email": "manager1@example.com",
+    "role": "manager"
+  }
+]
+
+
+
+
+Step 5: Approve a User
+
+Method: POST
+
+URL: /api/admin/approve/2/ (replace 2 with user ID)
+
+Authorization: Bearer Token → admin token
+
+Send → Response:
+
+{"success": "User approved"}
+
+User can now log in.
+
+
+
+
+Step 6: Reject a User (Optional)
+
+Method: POST
+
+URL: /api/admin/reject/3/ (replace 3 with another pending user ID)
+
+Authorization: Bearer Token → admin token
+
+Send → Response:
+
+{"success": "User rejected"}
+
+
+
+
+Step 7: Activate / Deactivate a User
+
+Method: POST
+
+URL: /api/admin/toggle-status/2/ (replace 2 with user ID)
+
+Authorization: Bearer Token → admin token
+
+Send → Response:
+
+{"success": "User deactivated successfully"}
+
+Send again → Response:
+
+{"success": "User activated successfully"}
+
+This toggles the is_active status.
+
+
+
+
+Step 8: Reset User Password
+
+Method: POST
+
+URL: /api/admin/reset-password/2/
+
+Authorization: Bearer Token → admin token
+
+Body → raw → JSON:
+
+{
+  "new_password": "NewStrongPass@123"
+}
+
+Send → Response:
+
+{"success": "Password reset successfully"}
+
+The user can now login with the new password.
+
+
+
+
+Step 9: View User Activity Logs
+
+Method: GET
+
+URL: /api/admin/user-logs/2/
+
+Authorization: Bearer Token → admin token
+
+Send → Response:
+
+{
+  "logs": [
+    {
+      "action_time": "2026-02-25T12:34:56.789Z",
+      "action_flag": 1,
+      "change_message": "User created",
+      "content_type_id": 14
+    }
+  ]
+}
+Confirms user activity logging.
+
+
+
+
+Step 10: User Login After Approval
+
+Method: POST
+
+URL: /api/auth/jwt/create/
+
+Body → raw → JSON:
+
+{
+  "username": "manager1",
+  "password": "NewStrongPass@123"
+}
+
+Send → Response:
+
+{
+  "refresh": "<refresh_token>",
+  "access": "<access_token>"
+}
+
+The user now has JWT for protected endpoints.
+
+
+
+
+Step 11: Test Role-Based Protection
+
+Try GET /admin/pending-users/ with user token (manager) → Should fail:
+
+{"detail": "You do not have permission to perform this action."}
+
+Admin token works → confirms role-based authorization.
