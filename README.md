@@ -95,14 +95,16 @@ Server runs at:
 http://127.0.0.1:8000/
 📌 API Endpoints
 🔹 Authentication
+---
 | Method | Endpoint                           | Description       |
 | ------ | ---------------------------------- | ----------------- |
 | POST   | `/api/register/`                   | Register new user |
 | GET    | `/api/verify-email/<uid>/<token>/` | Verify email      |
 | POST   | `/api/login/`                      | Login user        |
 | POST   | `/api/auth/jwt/refresh/`           | Refresh token     |
-
+---
 🔹 Admin Endpoints (Admin Only)
+---
 | Method | Endpoint                          | Description              |
 | ------ | --------------------------------- | ------------------------ |
 | GET    | `/api/admin/pending-users/`       | View pending users       |
@@ -111,7 +113,7 @@ http://127.0.0.1:8000/
 | POST   | `/api/admin/toggle-status/<id>/`  | Activate/Deactivate user |
 | POST   | `/api/admin/reset-password/<id>/` | Reset user password      |
 | GET    | `/api/admin/user-logs/<id>/`      | View user activity logs  |
-
+---
 🔒 Security Features
 
 Email verification required before login
